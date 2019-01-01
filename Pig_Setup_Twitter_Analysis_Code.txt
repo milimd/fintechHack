@@ -1,0 +1,76 @@
+##install pig:
+
+
+##download pig:
+wget https://archive.apache.org/dist/pig/pig-0.16.0/pig-0.16.0.tar.gz
+
+##uninstall
+tar xzf pig-0.16.0.tar.gz
+mv pig-0.16.0 pig_home
+
+##.bashrc
+export PIG_INSTALL=/home/ec2-user/pig_home
+export PATH=$PATH:$PIG_INSTALL/bin
+
+testFile = load '/home/ec2-user/sample.txt' using PigStorage('\t');
+dump testFile;
+
+####Pig Script for  twitter sebtiment analysis
+===============
+Local Run code:
+===============
+REGISTER '/home/ec2-user/pigFiles/elephant-bird-hadoop-compat-4.1.jar';
+REGISTER '/home/ec2-user/pigFiles/elephant-bird-pig-4.1.jar';
+REGISTER '/home/ec2-user/pigFiles/json-simple-1.1.1.jar';
+
+load_tweets = LOAD '/home/ec2-user/tweetsLocal/sample1.json' USING com.twitter.elephantbird.pig.load.JsonLoader(' -nestedLoad') AS myMap;
+extract_details = FOREACH load_tweets GENERATE myMap#'id' as id,myMap#'text' as text;
+tokens = foreach extract_details generate id,text,FLATTEN(TOKENIZE(text)) AS word;
+dictionary = load '/home/ec2-user/pigFiles/AFINN.txt' using PigStorage('\t') AS(word:chararray,rating:int);
+word_rating = join tokens by word left outer, dictionary by word using 'replicated';
+rating= foreach word_rating generate tokens::id as id,tokens::text as text, dictionary::rating as rate;
+word_group = group rating by (id,text);
+avg_rate= foreach word_group generate group.id as id,group.text as text, AVG (rating.rate) as tweet_rating;
+finalRating= foreach avg_rate generate id,(tweet_rating is null ? 'N' : (tweet_rating < 0 ? 'NP' : 'P')) as type;
+singleRecord = GROUP finalRating ALL;
+sentiCount = FOREACH singleRecord {
+        posRecord = FILTER finalRating BY type == 'P';
+        negRecord = FILTER finalRating BY type == 'NP';
+        netRecord = FILTER finalRating BY type == 'N';
+        GENERATE 'testClient',COUNT(posRecord), COUNT(negRecord), COUNT(netRecord);
+};
+dump sentiCount;
+===============
+Hadoop HDFS Run code:
+===============
+REGISTER '/home/ec2-user/pigFiles/elephant-bird-hadoop-compat-4.1.jar';
+REGISTER '/home/ec2-user/pigFiles/elephant-bird-pig-4.1.jar';
+REGISTER '/home/ec2-user/pigFiles/json-simple-1.1.1.jar';
+
+load_tweets = LOAD '/home/ec2-user/hadoop_home/pigInputFiles/sample1.json' USING com.twitter.elephantbird.pig.load.JsonLoader(' -nestedLoad') AS myMap;
+extract_details = FOREACH load_tweets GENERATE myMap#'id' as id,myMap#'text' as text;
+tokens = foreach extract_details generate id,text,FLATTEN(TOKENIZE(text)) AS word;
+dictionary = load '/home/ec2-user/hadoop_home/pigInputFiles/AFINN.txt' using PigStorage('\t') AS(word:chararray,rating:int);
+word_rating = join tokens by word left outer, dictionary by word using 'replicated';
+rating= foreach word_rating generate tokens::id as id,tokens::text as text, dictionary::rating as rate;
+word_group = group rating by (id,text);
+avg_rate= foreach word_group generate group.id as id,group.text as text, AVG (rating.rate) as tweet_rating;
+finalRating= foreach avg_rate generate id,(tweet_rating is null ? 'N' : (tweet_rating < 0 ? 'NP' : 'P')) as type;
+singleRecord = GROUP finalRating ALL;
+sentiCount = FOREACH singleRecord {
+        posRecord = FILTER finalRating BY type == 'P';
+        negRecord = FILTER finalRating BY type == 'NP';
+        netRecord = FILTER finalRating BY type == 'N';
+        GENERATE 'testClient',COUNT(posRecord), COUNT(negRecord), COUNT(netRecord);
+};
+STORE sentiCount INTO '/home/ec2-user/hadoop_home/tweetOut' using PigStorage(',');
+===>end 
+
+STORE sentiCount INTO ‘/home/ec2-user/hadoop_home/tweetOut’ using PigStorage(',');
+
+===============
+Execute Pig Script
+===============
+
+pig -x local '/home/ec2-user/pigFiles/tweet.pig'
+pig -x MAPREDUCE '/home/ec2-user/pigFiles/tweet.pig'

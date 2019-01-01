@@ -1,0 +1,17 @@
+##Hive Install
+wget https://archive.apache.org/dist/hive/hive-1.2.1/apache-hive-1.2.1-bin.tar.gz 
+wget https://archive.apache.org/dist/hive/hive-0.13.1/apache-hive-0.13.1-bin.tar.gz
+
+##uninstall
+tar xzf apache-hive-0.13.1-bin.tar.gz
+mv apache-hive-0.13.1-bin hive_home
+
+##.BASHRC File
+export HIVE_HOME=/home/ec2-user/hive_home
+export PATH=$PATH:$HIVE_HOME/bin
+
+create table emp(id int, name string)
+row format delimited 
+fields terminated by ',';
+
+Load data local inpath ‘/home/ec2-user/sample_hive.txt’ into table emp

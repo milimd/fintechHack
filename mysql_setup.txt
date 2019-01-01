@@ -1,0 +1,36 @@
+==================
+install mysql
+==================
+
+commadn to start the mysql server==> systemctl start mysqld
+
+##mysql grunt login command =>  mysql --user=root --p
+
+###Update Password and commands
+
+ALTER USER 'aarush'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Milind@123';
+
+CREATE USER 'aarush'@'localhost' IDENTIFIED BY 'Milind@123';
+
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
+
+CREATE USER 'root'@'%' IDENTIFIED BY 'Milind@123';
+
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+
+FLUSH PRIVILEGES;Name
+
+CREATE TABLE twitterCount (CName VARCHAR(30), PosCount INT,NegCount INT, NeuCount INT); 
+INSERT INTO twitterCount values('BOA',100,40,10);
+INSERT INTO twitterCount values('CAPOne',120,20,60);
+INSERT INTO twitterCount values('Citi',203,50,20);
+INSERT INTO twitterCount values('UCB',233,40,60);
+
+ALTER SCHEMA `mydatabase`  DEFAULT COLLATE utf8_bin ;
+ALTER TABLE `mydatabase`.`twitterCount` CONVERT TO CHARACTER SET UTF8MB3;
+
+##INSERT command
+
+NameINSERT INTO authors values(1,'Aarush','nn@dsd.com');
+Name
+INSERT INTO authors values(1,'Aarush','nn@dsd.com');

@@ -1,0 +1,24 @@
+########Install Apache sqoop
+wget https://archive.apache.org/dist/sqoop/1.4.6/sqoop-1.4.6.bin__hadoop-1.0.0.tar.gz
+
+##uninstall
+tar xzf sqoop-1.4.6.bin__hadoop-1.0.0.tar.gz
+mv sqoop-1.4.6.bin__hadoop-1.0.0 sqoop_home
+
+export SQOOP_HOME=/home/ec2-user/sqoop_home
+export SQOOP_CONF_DIR=$SQOOP_HOME/conf
+export SQOOP_CLASS_PATH=$SQOOP_CONF_DIR
+export PATH=$SQOOP_HOME/bin:$PATH
+
+sqoop list-databases --connect "jdbc:mysql://ec2-18-224-21-180.us-east-2.compute.amazonaws.com:3306" -username root -P
+
+sqoop list-tables --connect "jdbc:mysql://ec2-18-224-21-180.us-east-2.compute.amazonaws.com:3306/mydatabase" -username root -password Milind@123
+
+sqoop import --connect "jdbc:mysql://ec2-18-224-21-180.us-east-2.compute.amazonaws.com:3306/mydatabase" -username root -password Milind@123 --m 1 --table twitterCount --target-dir  /home/ec2-user/hadoop_home/sqoopImport
+
+sqoop export --connect "jdbc:mysql://ec2-18-224-169-221.us-east-2.compute.amazonaws.com:3306/mydatabase" -username root -P --m 1 --table twitterCount --export-dir "/home/ec2-user/hadoop_home/tweetOut"
+
+
+mysql connector: mysql-connector-java-8.0.13.tar
+tar xzf mysql-connector-java-8.0.13.tar
+
